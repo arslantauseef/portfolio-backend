@@ -5,10 +5,12 @@ import {
   // type AuthenticateRequest,
 } from "../middleware/requiredAuth.js";
 import {requireRole} from "../middleware/requiredRole.js"
+import cookieParser from "cookie-parser";
 const app = express();
 const port = 3000;
 
 app.use(express.json());
+app.use(cookieParser())
 
 app.get(
   "/auth/admin-check",

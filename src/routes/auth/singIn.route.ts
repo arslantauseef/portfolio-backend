@@ -6,6 +6,8 @@ import jwt from "jsonwebtoken";
 const singInRouter = Router();
 
 singInRouter.post("/signin", async (req, res) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   const { email, password } = req.body ?? {};
 
   if (
@@ -50,9 +52,15 @@ singInRouter.post("/signin", async (req, res) => {
       },
     );
 
+    res.cookie("accessToken", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 15 * 60 * 1000,
+      path: "/",
+    });
     res.json({
-      message: "Login Successfull.",
-      token,
+      message: "Login successful.",
       admin: {
         id: admin.id,
         name: admin.name,

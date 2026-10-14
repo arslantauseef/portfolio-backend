@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import jwt, { type JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
 export type AdminRole = "Administrator" | "Moderator";
 export type AuthenticateRequest = Request & {
@@ -12,14 +12,20 @@ export type AuthenticateRequest = Request & {
 export function requiredAuth(req: Request, res: Response, next: NextFunction) {
   const authReq = req as AuthenticateRequest;
   const header = req.headers.authorization;
+  const cookieToken = req.cookies?.accessToken;
 
-  if (!header?.startsWith("Bearer ")) {
+  const bearerToken = header?.startsWith("Bearer ")
+    ? header.slice("Bearer ".length)
+    : undefined;
+
+  const token = bearerToken ?? cookieToken;
+
+  if (!token) {
     res.status(401).json({
       message: "Authentication token is required.",
     });
     return;
   }
-  const token = header.slice("Bearer ".length);
   const jwtSecret = process.env.JWT_SECRET;
 
   if (!jwtSecret) {
