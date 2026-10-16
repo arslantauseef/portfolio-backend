@@ -7,10 +7,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/entry-point/server.ts",
+    "dev": "tsx watch src/srv/server.ts",
     "build": "tsc",
     "start": "node dist/entry-point/server.js",
-    "bootstrap:admin": "tsx src/database/scripts/bootstrap-admin.ts"
+    "bootstrap:admin": "tsx src/database/scripts/bootstrap-admin.ts",
+    "migrate": "tsx src/database/migrate/migrate.ts"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.7.2",

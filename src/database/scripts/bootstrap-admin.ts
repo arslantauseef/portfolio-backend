@@ -1,72 +1,90 @@
-
-import express from "express";
-import * as argon2 from "argon2";
+import argon from "argon2";
 import { input, password } from "@inquirer/prompts";
-import { pool } from "../../database/pool/pools.js";
+import { pool } from "../pool/pool.js";
 
- async function main(){
+async function bootstrapAdmin() {
+  if (process.env.ALLOW_ADMIN_BOOTSTRAP !== "true") {
+    throw new Error("Administrator bootstrap is disabled.");
+  }
+
   const name = await input({
     message: "Administrator name:",
-    validate: (value) => value.trim().length > 0 && value.trim().length <= 100,
+    validate: (value) => value.trim().length > 0 || "Name cannot be empty.",
   });
 
   const email = await input({
     message: "Administrator email:",
     validate: (value) =>
-      (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 255) ||
-      "Enter a valid email address.",
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || "Email cannot be empty",
   });
 
   const plainPassword = await password({
-    message: "Administrator password (at least 12 characters):",
-    mask: true,
-    validate: (value) => value.length >= 12 || "Use at least 12 characters.",
+    message: "Enter password:",
+    validate: (value) =>
+      value.length >= 12 || "Password must be at least 12 characters.",
   });
 
   await password({
     message: "Confirm Password",
     mask: true,
-    validate: (value) =>
-      value === plainPassword || "The passwords do not match.",
+    validate: (value) => value === plainPassword || "Passwords do not match",
   });
 
-  const passwordHash = await argon2.hash(plainPassword)
+  const hashedPassword = await argon.hash(plainPassword);
+
   const client = await pool.connect();
 
   try {
     await client.query("BEGIN");
-    await client.query("LOCK TABLE admins IN EXCLUSIVE MODE");
+    await client.query("LOCK TABLE users IN EXCLUSIVE MODE");
+    const existingAdmin = await client.query(
+      `
+        SELECT id
+        FROM users
+        WHERE role = 'Administrator'
+        LIMIT 1
+        `,
+    );
 
-    const existing = await client.query<{admin_count: number}>(
-      "SELECT COUNT(*)::int AS admin_count FROM admins WHERE role = $1",
-      ["Administrator"]
-    )
-
-    if((existing.rows[0]?.admin_count ?? 0) > 0)
-      throw new Error("An Administrator already exists; refusing to add another.")
+    if (existingAdmin.rows.length > 0) {
+      throw new Error("An Administrator already exists.");
+    }
 
     const result = await client.query(
-      `INSERT INTO admins (name, email, password_hash, role)
-      VALUES ($1, $2, $3, $4)
-      RETURNING id, name, email, role`,
-      [name.trim(), email.trim().toLowerCase(), passwordHash, "Administrator"]
+      `
+        INSERT INTO users (
+        name,
+        email,
+        hashed_password,
+        role
+        )
+        VALUES ($1,$2,$3,$4)
+        RETURNING id, name, email, role
+        `,
+      [
+        name.trim(),
+        email.trim().toLowerCase(),
+        hashedPassword,
+        "Administrator",
+      ],
     );
 
     await client.query("COMMIT");
-    console.log("Administrator Created", result.rows[0]);
+
+    console.log("Administrator created:", result.rows[0]);
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
   } finally {
     client.release();
-    await pool.end();
+    await client.end();
   }
 }
 
-main().catch((error: unknown)=> {
+bootstrapAdmin().catch((error) => {
   console.error(
-    "admin setup failed",
-    error instanceof Error ? error.message: "Unknown error",
-  )
-  process.exitCode = 1
-})
+    "Administrator bootstrap failed:",
+    error instanceof Error ? error.message : error,
+  );
+  process.exitCode = 1;
+});
