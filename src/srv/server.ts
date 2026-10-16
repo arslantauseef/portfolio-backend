@@ -3,12 +3,14 @@ import express from "express";
 import "dotenv/config";
 import { pool } from "../database/pool/pool.js";
 import { signInRouter } from "../routes/auth/signin.js";
+import cookieParser from "cookie-parser";
 // IMPORTS
 
 // DEFINE
 const app = express();
 const port = process.env.PORT ?? 3000;
 app.use(express.json());
+app.use(cookieParser());
 // DEFINE
 
 

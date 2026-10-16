@@ -74,7 +74,6 @@ signInRouter.post("/signin", async (req, res) => {
       .update(refreshToken)
       .digest("hex");
 
-    await client.query("BEGIN");
     const pushIntoUsers = await client.query(
       `
         INSERT INTO refresh_token (
@@ -86,7 +85,6 @@ signInRouter.post("/signin", async (req, res) => {
         `,
       [user.id, refreshTokenHashed],
     );
-    await client.query('COMMIT')
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,

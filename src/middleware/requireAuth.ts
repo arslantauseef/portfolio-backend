@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import "dotenv/config";
 
 type AuthPayload = {
-  id: string;
+  sub: string;
   role: "Administrator" | "Moderator" | "User";
 };
 
@@ -17,7 +17,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
   const jwtSecret = process.env.JWT_SECRET;
   if (!jwtSecret) {
-    return res.status(401).json({
+    return res.status(500).json({
       message: "JWT_SECRET is missing",
     });
   }
@@ -26,7 +26,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const decoded = jwt.verify(token, jwtSecret) as AuthPayload;
 
     if (
-      decoded.id !== "string" ||
+      typeof decoded.sub !== "string" ||
       !["Administrator", "Moderator", "User"].includes(decoded.role)
     ) {
       return res.status(401).json({
@@ -35,15 +35,15 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
     }
 
     req.auth = {
-      userId: decoded.id,
+      userId: decoded.sub,
       role: decoded.role,
     };
 
     next();
   } catch (error) {
     console.warn("Internal server error:", error);
-    return res.status(500).json({
-      message: "Internal Server Error",
+    return res.status(401).json({
+      message: "Invalid or Expired token",
       error: error,
     });
   }
