@@ -15,12 +15,15 @@ signInRouter.post("/signin", async (req, res) => {
       message: "Syntax issue",
     });
   }
-
+  console.time("connect");
   const client = await pool.connect();
+  console.timeEnd("connect");
 
   const normalizedEmail = email.trim().toLowerCase();
 
   try {
+    console.time("select");
+
     const result = await client.query(
       `
       SELECT
@@ -34,6 +37,7 @@ signInRouter.post("/signin", async (req, res) => {
         `,
       [normalizedEmail],
     );
+    console.timeEnd("select");
 
     if (result.rows.length === 0) {
       return res.status(404).json({
@@ -43,7 +47,11 @@ signInRouter.post("/signin", async (req, res) => {
 
     const user = result.rows[0];
 
+    console.time("argon");
+
     const passwordMatches = await argon.verify(user.hashed_password, password);
+
+    console.timeEnd("argon");
 
     if (!passwordMatches) {
       return res.status(401).json({
@@ -54,7 +62,7 @@ signInRouter.post("/signin", async (req, res) => {
     const jwtToken = process.env.JWT_SECRET;
 
     if (!jwtToken)
-      return res.status(401).json({
+      return res.status(500).json({
         message: "Missing JWT_TOKEN",
       });
 
@@ -74,7 +82,8 @@ signInRouter.post("/signin", async (req, res) => {
       .update(refreshToken)
       .digest("hex");
 
-    const pushIntoUsers = await client.query(
+    console.time("refresh insert");
+    await client.query(
       `
         INSERT INTO refresh_token (
         user_id,
@@ -85,6 +94,7 @@ signInRouter.post("/signin", async (req, res) => {
         `,
       [user.id, refreshTokenHashed],
     );
+    console.timeEnd("refresh insert");
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
@@ -98,7 +108,7 @@ signInRouter.post("/signin", async (req, res) => {
       httpOnly: true,
       sameSite: "lax",
       secure: false,
-      path: "/",
+      path: "/auth",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -112,10 +122,6 @@ signInRouter.post("/signin", async (req, res) => {
       },
     });
   } catch (error) {
-    console.warn({
-      Message: error,
-    });
-
     return res.status(500).json({
       message: "Unexpected backend/database error",
     });

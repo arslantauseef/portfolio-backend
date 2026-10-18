@@ -41,7 +41,6 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
     next();
   } catch (error) {
-    console.warn("Internal server error:", error);
     return res.status(401).json({
       message: "Invalid or Expired token",
       error: error,

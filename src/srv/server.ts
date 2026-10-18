@@ -4,6 +4,9 @@ import "dotenv/config";
 import { pool } from "../database/pool/pool.js";
 import { signInRouter } from "../routes/auth/signin.js";
 import cookieParser from "cookie-parser";
+import { signOutRouter } from "../routes/auth/signout.js";
+import { refreshRouter } from "../routes/auth/refresh.js";
+import { testRouter } from "../routes/auth/test-route.js";
 // IMPORTS
 
 // DEFINE
@@ -13,9 +16,11 @@ app.use(express.json());
 app.use(cookieParser());
 // DEFINE
 
-
 // ROUTES
-app.use("/auth", signInRouter)
+app.use("/auth", signInRouter);
+app.use("/auth", signOutRouter);
+app.use("/auth", refreshRouter);
+app.use("/auth", testRouter);
 // ROUTES
 
 app.get("/", async (req, res) => {
