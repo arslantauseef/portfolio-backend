@@ -7,6 +7,7 @@ import cookieParser from "cookie-parser";
 import { signOutRouter } from "../routes/auth/signout.js";
 import { refreshRouter } from "../routes/auth/refresh.js";
 import { testRouter } from "../routes/auth/test-route.js";
+import { meRouter } from "../routes/auth/me.js";
 // IMPORTS
 
 // DEFINE
@@ -21,6 +22,7 @@ app.use("/auth", signInRouter);
 app.use("/auth", signOutRouter);
 app.use("/auth", refreshRouter);
 app.use("/auth", testRouter);
+app.use("/auth", meRouter);
 // ROUTES
 
 app.get("/", async (req, res) => {

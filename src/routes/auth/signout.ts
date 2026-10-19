@@ -40,8 +40,8 @@ signOutRouter.post("/signout", async (req, res) => {
       message: "Signed out successfully.",
     });
   } catch (error) {
-    return res.status(404).json({
-      message: "Resources not found.",
+    return res.status(500).json({
+      message: "Internal server error.",
     });
   }
 });
