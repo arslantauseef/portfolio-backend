@@ -8,6 +8,9 @@ import { signOutRouter } from "../routes/auth/signout.js";
 import { refreshRouter } from "../routes/auth/refresh.js";
 import { testRouter } from "../routes/auth/test-route.js";
 import { meRouter } from "../routes/auth/me.js";
+import { createUserRouter } from "../routes/user_management/create.user.js";
+import { getUsersRouter } from "../routes/user_management/get.users.js";
+import { patchUsersRouter } from "../routes/user_management/patch.users.js";
 // IMPORTS
 
 // DEFINE
@@ -18,11 +21,19 @@ app.use(cookieParser());
 // DEFINE
 
 // ROUTES
+// --------Auth----------
 app.use("/auth", signInRouter);
 app.use("/auth", signOutRouter);
 app.use("/auth", refreshRouter);
 app.use("/auth", testRouter);
 app.use("/auth", meRouter);
+// --------Auth----------
+
+// --------users manager----------
+app.use("/users", createUserRouter);
+app.use("/users", getUsersRouter);
+app.use("/users", patchUsersRouter);
+// --------users manager----------
 // ROUTES
 
 app.get("/", async (req, res) => {
