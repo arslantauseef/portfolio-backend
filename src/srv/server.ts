@@ -1,5 +1,6 @@
 // IMPORTS
 import express from "express";
+import cors from "cors";
 import "dotenv/config";
 import { pool } from "../database/pool/pool.js";
 import { signInRouter } from "../routes/auth/signin.js";
@@ -13,12 +14,34 @@ import { getUsersRouter } from "../routes/user_management/administrator/get.user
 import { patchUsersRouter } from "../routes/user_management/administrator/patch.user.js";
 import { changePasswordRouter } from "../routes/user_management/administrator/patch.password.user.js";
 import { deleteUserRouter } from "../routes/user_management/administrator/delete.user.js";
+
 // IMPORTS
 
 // DEFINE
 const app = express();
 const port = process.env.PORT ?? 3000;
+
+const localOrigin = process.env.ALLOWED_CORS_ORIGIN_LOCAL;
+const globalOrigin = process.env.ALLOWED_CORS_ORIGIN_GLOBAL;
+
+if (
+  typeof localOrigin !== "string" ||
+  typeof globalOrigin !== "string"
+) {
+  throw new Error("CORS origins are missing.");
+}
+const allowedPath = [
+  localOrigin,
+  globalOrigin,
+];
+
 app.use(express.json());
+app.use(
+  cors({
+    origin: allowedPath,
+    credentials: true,
+  }),
+);
 app.use(cookieParser());
 // DEFINE
 
