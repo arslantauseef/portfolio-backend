@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { requireAuth } from "../../middleware/requireAuth.js";
-import { requireRole } from "../../middleware/requireRole.js";
-import { pool } from "../../database/pool/pool.js";
+import { requireAuth } from "../../../middleware/requireAuth.js";
+import { requireRole } from "../../../middleware/requireRole.js";
+import { pool } from "../../../database/pool/pool.js";
 
 export const getUsersRouter = Router();
 

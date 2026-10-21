@@ -8,9 +8,11 @@ import { signOutRouter } from "../routes/auth/signout.js";
 import { refreshRouter } from "../routes/auth/refresh.js";
 import { testRouter } from "../routes/auth/test-route.js";
 import { meRouter } from "../routes/auth/me.js";
-import { createUserRouter } from "../routes/user_management/create.user.js";
-import { getUsersRouter } from "../routes/user_management/get.users.js";
-import { patchUsersRouter } from "../routes/user_management/patch.users.js";
+import { createUserRouter } from "../routes/user_management/administrator/create.user.js";
+import { getUsersRouter } from "../routes/user_management/administrator/get.users.js";
+import { patchUsersRouter } from "../routes/user_management/administrator/patch.user.js";
+import { changePasswordRouter } from "../routes/user_management/administrator/patch.password.user.js";
+import { deleteUserRouter } from "../routes/user_management/administrator/delete.user.js";
 // IMPORTS
 
 // DEFINE
@@ -33,6 +35,8 @@ app.use("/auth", meRouter);
 app.use("/users", createUserRouter);
 app.use("/users", getUsersRouter);
 app.use("/users", patchUsersRouter);
+app.use("/users", changePasswordRouter);
+app.use("/users", deleteUserRouter);
 // --------users manager----------
 // ROUTES
 
