@@ -96,18 +96,20 @@ signInRouter.post("/signin", async (req, res) => {
     );
     console.timeEnd("refresh insert");
 
+    const isProduction = process.env.NODE_ENV === "production"
+
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
       path: "/",
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: false,
+      sameSite: isProduction ? "none" : "lax",
+      secure: isProduction,
       path: "/auth",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });

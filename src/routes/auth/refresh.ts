@@ -46,11 +46,12 @@ refreshRouter.post("/refreshtoken", async (req, res) => {
     if (result.rows.length === 0) {
       await client.query("ROLLBACK");
       transactionStarted = false;
+      const isProduction = process.env.NODE_ENV === "production";
 
       res.clearCookie("refreshToken", {
         httpOnly: true,
-        secure: false,
-        sameSite: "lax",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         path: "/auth",
       });
 
@@ -106,17 +107,19 @@ refreshRouter.post("/refreshtoken", async (req, res) => {
     await client.query("COMMIT");
     transactionStarted = false;
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     res.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 15 * 60 * 1000,
       path: "/",
     });
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/auth",
     });

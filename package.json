@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx watch src/srv/server.ts",
     "build": "tsc",
-    "start": "node dist/entry-point/server.js",
+    "start": "node dist/srv/server.js",
     "bootstrap:admin": "tsx src/database/scripts/bootstrap-admin.ts",
     "migrate": "tsx src/database/migrate/migrate.ts"
   },
